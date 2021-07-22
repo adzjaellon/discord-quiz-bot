@@ -1,6 +1,6 @@
 import discord
 from decouple import config
-from api_requests import get_question, my_questions
+from api_requests import get_question, my_questions, update_points, get_ranking
 import asyncio
 
 client = discord.Client()
@@ -32,7 +32,7 @@ async def on_message(message):
                 user = guess.author
                 msg = str(guess.author.name) + ' you got it +' + str(points) + 'points'
                 await message.channel.send(msg)
-
+                update_points(user, points, user.id, question_id)
             else:
                 await message.channel.send('Wrong answer!')
         else:
@@ -40,9 +40,14 @@ async def on_message(message):
 
     if message.content.startswith('$myquestions'):
         content = my_questions(message.author.id)
+        print('my questions cointent', content)
         if content is not None:
             await message.channel.send(content)
         else:
             await message.channel.send('You dont have any questions')
+
+    if message.content.startswith('$rank'):
+        leaderboard = get_ranking(message.content, message.author.id)
+        await message.channel.send(leaderboard)
 
 client.run(token)

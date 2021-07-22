@@ -24,6 +24,6 @@ class QuestionSerializer(serializers.ModelSerializer):
             'answer',
             'points',
             'author',
-
+            'created'
         ]
         read_only_fields = ('author', 'answer')
