@@ -58,7 +58,6 @@ def get_ranking(message, author_id):
     msg = message.split(' ')
     print(msg)
     leaderboard = ''
-    link = None
 
     if len(msg) > 1:
         link = f'http://127.0.0.1:8000/api/users/?id={author_id}&param={msg[1]}'
@@ -78,5 +77,34 @@ def get_ranking(message, author_id):
         return leaderboard
     else:
         return 'Number must be greater than 0!'
+
+
+def create_question(message, author_id, name):
+    content = message.content.replace('$create', '')
+    msg = content.split('.')
+    link = 'http://127.0.0.1:8000/api/question/'
+
+    if len(msg) < 6 or len(msg) > 9:
+        return 'WRONG! You need at least 3 answers to your question (max 5 answers)!\nCorrect question template: [ EXAMPLE: $create how old are you?.2.14.16.21.3 (question: how old are you? - points: 2 - answers: 14, 16, 21 - correct answer: 3)\n($create [title].[points].[answers (multiple)].[correct answer]) ]'
+    if not msg[1].isdigit():
+        return 'ERROR! Question points must be a number (integer)!\nCorrect question template: [ EXAMPLE: $create how old are you?.2.14.16.21.3 (question: how old are you? - points: 2 - answers: 14, 16, 21 - numner of correct answer: 3(answer 21))\n($create [title].[points].[answers (multiple)].[correct answer]) ]'
+    if not msg[-1].isdigit():
+        return 'ERROR! Correct answer must be an number (integer)!\nCorrect question template: [ EXAMPLE: $create how old are you?.2.14.16.21.3 (question: how old are you? - points: 2 - answers: 14, 16, 21 - numner of correct answer: 3(answer 21))\n($create [title].[points].[answers (multiple)].[correct answer]) ]'
+    if int(msg[-1]) > len(msg[2:-1]):
+        return 'ERROR! Correct answer number cant be greater than the number of all answers!\nCorrect question template: [ EXAMPLE: $create how old are you?.2.14.16.21.3 (question: how old are you? - points: 2 - answers: 14, 16, 21 - numner of correct answer: 3(answer 21))\n($create [title].[points].[answers (multiple)].[correct answer]) ]'
+
+    data = {'name': name, 'author_id': author_id, 'title': msg[0], 'points': msg[1], 'answers': msg[2:-1], 'correct': msg[-1]}
+    response = requests.post(link, data=data)
+    json_data = json.loads(response.text)
+    return json_data
+
+
+def delete_question(user_id, question_id):
+    link = f'http://127.0.0.1:8000/api/question/{question_id}/?user_id={user_id}'
+    response = requests.delete(link)
+    json_data = json.loads(response.text)
+
+    return json_data
+
 
 

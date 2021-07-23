@@ -1,6 +1,6 @@
 import discord
 from decouple import config
-from api_requests import get_question, my_questions, update_points, get_ranking
+from api_requests import get_question, my_questions, update_points, get_ranking, delete_question, create_question
 import asyncio
 
 client = discord.Client()
@@ -49,5 +49,21 @@ async def on_message(message):
     if message.content.startswith('$rank'):
         leaderboard = get_ranking(message.content, message.author.id)
         await message.channel.send(leaderboard)
+
+    if message.content.startswith('$create'):
+        name = message.author.name + message.author.discriminator
+        msg = create_question(message, message.author.id, name)
+        await message.channel.send(msg)
+
+    if message.content.startswith('$delete'):
+        msg = message.content.split(' ')
+        print('delete question: message', msg)
+
+        if len(msg) > 2 or len(msg) == 1:
+            await message.channel.send("( $delete question_id ) is correct format for deleting questions")
+        else:
+            content = delete_question(message.author.id, int(msg[1]))
+            print('delete content', content)
+            await message.channel.send(content)
 
 client.run(token)

@@ -13,11 +13,11 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         count = self.request.query_params.get('param', None)
         id = self.request.query_params.get('id', None)
-        if int(count) < 1:
-            return None
 
         if count is not None:
-            if count.isdigit():
+            if count < 1:
+                return None
+            elif count.isdigit():
                 queryset = UserProfile.objects.all()[:int(count)]
             else:
                 queryset = UserProfile.objects.filter(discord_id=id)
