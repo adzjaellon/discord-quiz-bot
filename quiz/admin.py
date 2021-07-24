@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Question, Answer
+from .models import Question, Answer, Review
 
 
 class AnswerInlineModel(admin.TabularInline):
@@ -27,3 +27,8 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [
         AnswerInlineModel
     ]
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    pass

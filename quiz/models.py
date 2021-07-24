@@ -23,3 +23,12 @@ class Answer(models.Model):
 
     def __str__(self):
         return f'{self.question} {self.content[:15]}'
+
+
+class Review(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='review')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='review')
+    stars = models.SmallIntegerField()
+
+    def __str__(self):
+        return f'{self.user} {self.question} {self.stars}'

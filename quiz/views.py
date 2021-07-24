@@ -1,6 +1,7 @@
-from .models import Question, Answer
+from .models import Question, Answer, Review
 from rest_framework import viewsets
-from .serializers import QuestionSerializer
+from rest_framework import filters
+from .serializers import QuestionSerializer, ReviewSerializer
 from rest_framework.response import Response
 from user.models import UserProfile
 
@@ -39,6 +40,30 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         return Response(f'Question with id {question.id} created succesfully')
 
+    def update(self, request, *args, **kwargs):
+        question = self.get_object()
+        user_id = int(request.data['user_id'])
+        username = request.data['username']
+        rating = int(request.data['rating'])
+
+        if rating in list(range(1, 6)):
+            if UserProfile.objects.filter(discord_id=user_id).exists():
+                user = UserProfile.objects.get(discord_id=user_id)
+            else:
+                UserProfile.objects.create(name=username, discord_id=user_id, score=0)
+                user = UserProfile.objects.get(discord_id=user_id)
+
+            print(question.review.filter(user=user).exists())
+            if question.review.filter(user=user).exists():
+                return Response('You already rated this question!')
+            else:
+                review = Review.objects.create(user=user, question=question, stars=rating)
+                question.review.add(review)
+                question.save()
+                return Response(f'Your rate to question with id {question.id} has been saved!')
+        else:
+            return Response(f'Wrong rating number, allowed numbers from 1 to 5')
+
     def destroy(self, request, *args, **kwargs):
         user_id = self.request.query_params.get('user_id', None)
         question_id = kwargs['pk']
@@ -53,3 +78,32 @@ class QuestionViewSet(viewsets.ModelViewSet):
         else:
             return Response(f'Question with id: {question_id} does not exist!')
 
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    filter_backends = (filters.OrderingFilter, )
+    ordering = ('-stars', )
+
+    def get_queryset(self):
+        id = self.request.query_params.get('id', None)
+        print('review id', id)
+        if id is not None:
+            queryset = Review.objects.filter(user__discord_id=int(id))
+        else:
+            queryset = Review.objects.all()
+        return queryset
+
+    def destroy(self, request, *args, **kwargs):
+        print('request user', request.user)
+        user_id = self.request.query_params.get('user_id', None)
+        review_id = kwargs['pk']
+
+        if Review.objects.filter(id=review_id).exists():
+            review = Review.objects.get(id=review_id)
+            if int(user_id) == review.user.discord_id:
+                review.delete()
+                return Response(f'Review with id: {review_id} deleted')
+            else:
+                return Response('You have no permission to do that')
+        else:
+            return Response(f'Your review with id {review_id} does not exist!')

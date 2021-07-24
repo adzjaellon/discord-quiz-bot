@@ -44,12 +44,18 @@ def my_questions(user_id):
             text += 'id: ' + str(json_data[i]['id']) + ' - Question: ' + json_data[i]['title'] + ' - Created on: ' + json_data[i]['created'] + '\n'
     else:
         text = None
+
     return text
 
 
 def update_points(name, points, id, question_id):
     url = 'http://127.0.0.1:8000/api/users/'
-    data = {'name': name, 'score': points, 'discord_id': id, 'question_id': question_id}
+    data = {
+        'name': name,
+        'score': points,
+        'discord_id': id,
+        'question_id': question_id
+    }
     request = requests.post(url, data)
     return
 
@@ -93,9 +99,16 @@ def create_question(message, author_id, name):
     if int(msg[-1]) > len(msg[2:-1]):
         return 'ERROR! Correct answer number cant be greater than the number of all answers!\nCorrect question template: [ EXAMPLE: $create how old are you?.2.14.16.21.3 (question: how old are you? - points: 2 - answers: 14, 16, 21 - numner of correct answer: 3(answer 21))\n($create [title].[points].[answers (multiple)].[correct answer]) ]'
 
-    data = {'name': name, 'author_id': author_id, 'title': msg[0], 'points': msg[1], 'answers': msg[2:-1], 'correct': msg[-1]}
+    data = {
+        'name': name,
+        'author_id': author_id,
+        'title': msg[0], 'points': msg[1],
+        'answers': msg[2:-1],
+        'correct': msg[-1]
+    }
     response = requests.post(link, data=data)
     json_data = json.loads(response.text)
+
     return json_data
 
 
@@ -107,4 +120,26 @@ def delete_question(user_id, question_id):
     return json_data
 
 
+def rate_question(question_id, rating, user_id, username):
+    url = f'http://127.0.0.1:8000/api/question/{question_id}/'
+    data = {
+        'rating': rating,
+        'user_id': user_id,
+        'username': username
+    }
+    response = requests.put(url, data=data)
+    json_data = json.loads(response.text)
 
+    return json_data
+
+
+def my_reviews(user_id):
+    url = f'http://127.0.0.1:8000/api/review/?id={user_id}'
+    response = requests.get(url)
+    json_data = json.loads(response.text)
+    text = ''
+    for i in range(0, len(json_data)):
+        text += 'REVIEW ID: ' + str(json_data[i]['id']) + ' --- RATING: ' + str(json_data[i]['stars']) + ' --- Question id: ' + str(json_data[i]['question']['id']) + ' --- Question title [' + json_data[i]['question']['title'] + ']\n'
+    print('text', text)
+
+    return text
