@@ -53,7 +53,7 @@ async def on_message(message):
 
     if message.content.startswith('$myquestions'):
         content = my_questions(message.author.id)
-        print('my questions cointent', content)
+
         if content is not None:
             await message.channel.send(content)
         else:
@@ -70,7 +70,6 @@ async def on_message(message):
 
     if message.content.startswith('$delete'):
         msg = message.content.split(' ')
-        print('delete question: message', msg)
 
         if len(msg) > 2 or len(msg) == 1:
             await message.channel.send("( $delete question_id ) is correct format for deleting questions")
@@ -85,6 +84,7 @@ async def on_message(message):
 
     if message.content.startswith('$rate'):
         msg = message.content.split(' ')
+
         if len(msg) == 3:
             content = rate_question(msg[1], msg[2], message.author.id, message.author.name)
             await message.channel.send(content)
@@ -93,7 +93,6 @@ async def on_message(message):
 
     if message.content.startswith('$reviewdelete'):
         msg = message.content.split(' ')
-        print('delete review: message', msg)
 
         if len(msg) > 2 or len(msg) == 1:
             await message.channel.send("( $deletereview review_id ) is correct format for deleting questions")

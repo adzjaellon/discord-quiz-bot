@@ -89,7 +89,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         id = self.request.query_params.get('id', None)
-        print('review id', id)
+
         if id is not None:
             queryset = Review.objects.filter(user__discord_id=int(id))
         else:
@@ -97,7 +97,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return queryset
 
     def destroy(self, request, *args, **kwargs):
-        print('request user', request.user)
         user_id = self.request.query_params.get('user_id', None)
         review_id = kwargs['pk']
 

@@ -16,6 +16,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'questions_number',
             'reviews_number'
         ]
+        read_only_fields = ('discord_id',)
 
 
 class UserProfileMiniSerializer(serializers.ModelSerializer):
@@ -26,3 +27,4 @@ class UserProfileMiniSerializer(serializers.ModelSerializer):
             'name',
             'discord_id'
         ]
+        read_only_fields = ('discord_id',)

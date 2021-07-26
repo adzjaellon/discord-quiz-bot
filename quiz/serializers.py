@@ -3,15 +3,6 @@ from .models import Question, Answer, Review
 from user.serializers import UserProfileSerializer, UserProfileMiniSerializer
 
 
-class QuestionMiniSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Question
-        fields = [
-            'id',
-            'title',
-        ]
-
-
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
@@ -63,7 +54,6 @@ class QuestionSerializer(serializers.ModelSerializer):
             'solved_by',
             'get_average_review',
             'review'
-
         ]
         read_only_fields = ('author', 'answer')
 

@@ -33,6 +33,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         print('request data create/update user profile', request.data)
         serializer = UserProfileSerializer(data=request.data)
         question_id = request.data['question_id']
+
         if serializer.is_valid():
             name = serializer.validated_data['name']
             points = serializer.validated_data['score']

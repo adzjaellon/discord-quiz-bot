@@ -61,7 +61,6 @@ def update_points(name, points, id, question_id):
 
 def get_ranking(message, author_id):
     msg = message.split(' ')
-    print(msg)
     leaderboard = ''
 
     if len(msg) > 1:
@@ -73,7 +72,6 @@ def get_ranking(message, author_id):
 
     response = requests.get(link)
     json_data = json.loads(response.text)
-    print('get_ranking json data', json_data)
 
     position = 1
     if len(json_data) > 1:
@@ -140,7 +138,6 @@ def my_reviews(user_id):
     text = ''
     for i in range(0, len(json_data)):
         text += 'REVIEW ID: ' + str(json_data[i]['id']) + ' --- RATING: ' + str(json_data[i]['stars']) + ' --- Question id: ' + str(json_data[i]['question']['id']) + ' --- Question title [' + json_data[i]['question']['title'] + ']\n'
-    print('text', text)
 
     return text
 
@@ -157,6 +154,6 @@ def profile(user_id):
     url = f'http://127.0.0.1:8000/api/users/profile_details/?id={user_id}'
     response = requests.get(url)
     json_data = json.loads(response.text)
-    print('profile', json_data)
     text = f"Name: {json_data['name']}\nScore: {json_data['score']}\nCreated questions: {json_data['questions_number']}\nCreated reviews: {json_data['reviews_number']}\n"
+
     return text
