@@ -9,6 +9,9 @@ from user.models import UserProfile
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    ordering = ('author',)
+    search_fields = ('title',)
 
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
@@ -107,3 +110,4 @@ class ReviewViewSet(viewsets.ModelViewSet):
                 return Response('You have no permission to do that')
         else:
             return Response(f'Your review with id {review_id} does not exist!')
+

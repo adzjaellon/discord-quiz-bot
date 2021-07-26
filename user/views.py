@@ -1,23 +1,25 @@
 from .models import UserProfile
 from rest_framework import viewsets
 from rest_framework import status
+from rest_framework import filters
 from .serializers import UserProfileSerializer
 from rest_framework.response import Response
 from quiz.models import Question
+from rest_framework.decorators import action
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    filter_backends = (filters.OrderingFilter,)
+    ordering = ('-score',)
 
     def get_queryset(self):
         count = self.request.query_params.get('param', None)
         id = self.request.query_params.get('id', None)
 
         if count is not None:
-            if count < 1:
-                return None
-            elif count.isdigit():
+            if count.isdigit():
                 queryset = UserProfile.objects.all()[:int(count)]
             else:
                 queryset = UserProfile.objects.filter(discord_id=id)
@@ -47,3 +49,10 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
             return Response(None, status=status.HTTP_201_CREATED)
         return Response(serializer.errors)
+
+    @action(detail=False, methods=['get'])
+    def profile_details(self, request, **kwargs):
+        id = self.request.query_params.get('id', None)
+        user = UserProfile.objects.get(discord_id=id)
+        serializer = UserProfileSerializer(user, many=False)
+        return Response(serializer.data)

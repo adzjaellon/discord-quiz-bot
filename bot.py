@@ -2,7 +2,8 @@ import discord
 from decouple import config
 from api_requests import (get_question, my_questions, update_points,
                           get_ranking, delete_question, create_question,
-                          my_reviews, rate_question)
+                          my_reviews, rate_question, delete_review,
+                          profile)
 import asyncio
 
 client = discord.Client()
@@ -14,6 +15,16 @@ async def on_message(message):
 
     if message.author == client.user:
         return
+
+    if message.content.startswith('$commands'):
+        content = '$rank - Displaying my current ranking | $rank (number) - Displaying top players from 1 to number \n\n' \
+                  '($create [title].[points].[answers (multiple)].[correct answer]) - Creating question that will be added to the database, EXAMPLE $create how old are you?.2.14.16.21.3 (where 2 is how much points did you get for correct guess and 3 is number of correct answer)\n\n' \
+                  '$myquestions - Displaying list of all my questions\n\n' \
+                  '$delete (question_id) - Deleting question with given id\n\n' \
+                  '$rate (question_id) (rating from 1 to 5) - Rate question with given id\n\n' \
+                  '$myreviews - Displaying list of my reviews\n\n' \
+                  '$reviewdelete (review_id) - Deleting review with given id\n\n'
+        await message.channel.send(content)
 
     if message.content.startswith('$random'):
         a, answer, points, question_id, average, author = get_question(message.author.id)
@@ -79,5 +90,19 @@ async def on_message(message):
             await message.channel.send(content)
         else:
             await message.channel.send("( $rate (question id) (0-5 rating) ) is correct format for deleting questions")
+
+    if message.content.startswith('$reviewdelete'):
+        msg = message.content.split(' ')
+        print('delete review: message', msg)
+
+        if len(msg) > 2 or len(msg) == 1:
+            await message.channel.send("( $deletereview review_id ) is correct format for deleting questions")
+        else:
+            content = delete_review(message.author.id, int(msg[1]))
+            await message.channel.send(content)
+
+    if message.content.startswith('$profile'):
+        content = profile(message.author.id)
+        await message.channel.send(content)
 
 client.run(token)

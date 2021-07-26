@@ -38,7 +38,6 @@ def my_questions(user_id):
     json_data = json.loads(response.text)
 
     text = ''
-    print('my questions json data', json_data)
     if len(json_data) > 0:
         for i in range(0, len(json_data)):
             text += 'id: ' + str(json_data[i]['id']) + ' - Question: ' + json_data[i]['title'] + ' - Created on: ' + json_data[i]['created'] + '\n'
@@ -66,23 +65,24 @@ def get_ranking(message, author_id):
     leaderboard = ''
 
     if len(msg) > 1:
+        if int(msg[1]) < 1:
+            return 'Number must be greater than zero'
         link = f'http://127.0.0.1:8000/api/users/?id={author_id}&param={msg[1]}'
     else:
         link = f'http://127.0.0.1:8000/api/users/?id={author_id}'
 
     response = requests.get(link)
     json_data = json.loads(response.text)
-    if json_data is not None:
-        position = 1
-        if len(json_data) > 1:
-            for user in json_data:
-                leaderboard += str(position) + '. ' + user['name'] + ' points: ' + str(user['score']) + '\n'
-                position += 1
-        else:
-            leaderboard += str(position) + '. ' + json_data[0]['name'] + ' points: ' + str(json_data[0]['score']) + '\n'
-        return leaderboard
+    print('get_ranking json data', json_data)
+
+    position = 1
+    if len(json_data) > 1:
+        for user in json_data:
+            leaderboard += str(position) + '. ' + user['name'] + ' points: ' + str(user['score']) + '\n'
+            position += 1
     else:
-        return 'Number must be greater than 0!'
+        leaderboard += str(position) + '. ' + json_data[0]['name'] + ' points: ' + str(json_data[0]['score']) + '\n'
+    return leaderboard
 
 
 def create_question(message, author_id, name):
@@ -142,4 +142,21 @@ def my_reviews(user_id):
         text += 'REVIEW ID: ' + str(json_data[i]['id']) + ' --- RATING: ' + str(json_data[i]['stars']) + ' --- Question id: ' + str(json_data[i]['question']['id']) + ' --- Question title [' + json_data[i]['question']['title'] + ']\n'
     print('text', text)
 
+    return text
+
+
+def delete_review(user_id, question_id):
+    link = f'http://127.0.0.1:8000/api/review/{question_id}/?user_id={user_id}'
+    response = requests.delete(link)
+    json_data = json.loads(response.text)
+
+    return json_data
+
+
+def profile(user_id):
+    url = f'http://127.0.0.1:8000/api/users/profile_details/?id={user_id}'
+    response = requests.get(url)
+    json_data = json.loads(response.text)
+    print('profile', json_data)
+    text = f"Name: {json_data['name']}\nScore: {json_data['score']}\nCreated questions: {json_data['questions_number']}\nCreated reviews: {json_data['reviews_number']}\n"
     return text
