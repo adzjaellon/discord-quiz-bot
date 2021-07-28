@@ -3,7 +3,7 @@ from decouple import config
 from api_requests import (get_question, my_questions, update_points,
                           get_ranking, delete_question, create_question,
                           my_reviews, rate_question, delete_review,
-                          profile)
+                          profile, increase_attempts, increase_successful_attempts)
 import asyncio
 
 client = discord.Client()
@@ -39,6 +39,7 @@ async def on_message(message):
             try:
                 guess = await client.wait_for('message', check=check, timeout=5.0)
             except asyncio.TimeoutError:
+                increase_attempts(message.author.id, message.author)
                 return await message.channel.send('Time is up, you failed')
 
             if int(guess.content) == answer:
@@ -46,8 +47,11 @@ async def on_message(message):
                 msg = str(guess.author.name) + ' you got it +' + str(points) + 'points'
                 await message.channel.send(msg)
                 update_points(user, points, user.id, question_id)
+                increase_successful_attempts(message.author.id)
             else:
+
                 await message.channel.send('Wrong answer!')
+            increase_attempts(message.author.id, message.author)
         else:
             await message.channel.send('Theres no more questions to be solved')
 

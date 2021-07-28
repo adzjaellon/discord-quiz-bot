@@ -5,6 +5,7 @@ from .models import UserProfile
 class UserProfileSerializer(serializers.ModelSerializer):
     questions_number = serializers.ReadOnlyField()
     reviews_number = serializers.ReadOnlyField()
+    correct_rate = serializers.ReadOnlyField()
 
     class Meta:
         model = UserProfile
@@ -14,9 +15,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'score',
             'discord_id',
             'questions_number',
-            'reviews_number'
+            'reviews_number',
+            'total_attempts',
+            'successful_attempts',
+            'correct_rate'
         ]
-        read_only_fields = ('discord_id',)
 
 
 class UserProfileMiniSerializer(serializers.ModelSerializer):

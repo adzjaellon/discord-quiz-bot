@@ -37,9 +37,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     answer = AnswerSerializer(many=True, read_only=True)
-    author = UserProfileSerializer(many=False)
+    author = UserProfileMiniSerializer(many=False)
     review = ReviewSerializer(many=True)
-    solved_by = UserProfileSerializer(many=True)
+    solved_by = UserProfileMiniSerializer(many=True)
     get_average_review = serializers.ReadOnlyField()
 
     class Meta:

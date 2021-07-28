@@ -136,9 +136,12 @@ def my_reviews(user_id):
     response = requests.get(url)
     json_data = json.loads(response.text)
     text = ''
-    for i in range(0, len(json_data)):
-        text += 'REVIEW ID: ' + str(json_data[i]['id']) + ' --- RATING: ' + str(json_data[i]['stars']) + ' --- Question id: ' + str(json_data[i]['question']['id']) + ' --- Question title [' + json_data[i]['question']['title'] + ']\n'
 
+    if json_data:
+        for i in range(0, len(json_data)):
+            text += 'REVIEW ID: ' + str(json_data[i]['id']) + ' --- RATING: ' + str(json_data[i]['stars']) + ' --- Question id: ' + str(json_data[i]['question']['id']) + ' --- Question title [' + json_data[i]['question']['title'] + ']\n'
+    else:
+        text = 'You have no reviews!'
     return text
 
 
@@ -154,6 +157,25 @@ def profile(user_id):
     url = f'http://127.0.0.1:8000/api/users/profile_details/?id={user_id}'
     response = requests.get(url)
     json_data = json.loads(response.text)
-    text = f"Name: {json_data['name']}\nScore: {json_data['score']}\nCreated questions: {json_data['questions_number']}\nCreated reviews: {json_data['reviews_number']}\n"
 
+    if isinstance(json_data, dict):
+        text = f"Name: {json_data['name']}\nScore: {json_data['score']}\nCreated questions: {json_data['questions_number']}\nCreated reviews: {json_data['reviews_number']}\nEfficiency: {json_data['correct_rate']}%"
+    else:
+        text = json_data
     return text
+
+
+def increase_attempts(user_id, username):
+    url = f'http://127.0.0.1:8000/api/users/increase_attempts/?id={user_id}&name={username}'
+    response = requests.put(url, data={})
+    json_data = json.loads(response.text)
+    print('increase attempts json data', json_data)
+    return
+
+
+def increase_successful_attempts(user_id):
+    url = f'http://127.0.0.1:8000/api/users/increase_successful_attempts/?id={user_id}'
+    response = requests.put(url, data={})
+    json_data = json.loads(response.text)
+    print('increase successful attempts json data', json_data)
+    return
