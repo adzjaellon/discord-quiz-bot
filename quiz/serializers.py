@@ -33,6 +33,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             'stars',
             'question'
         ]
+        read_only_fields = ('__all__', )
 
 
 class QuestionSerializer(serializers.ModelSerializer):

@@ -20,6 +20,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'successful_attempts',
             'correct_rate'
         ]
+        read_only_fields = ('id',)
 
 
 class UserProfileMiniSerializer(serializers.ModelSerializer):
@@ -30,4 +31,4 @@ class UserProfileMiniSerializer(serializers.ModelSerializer):
             'name',
             'discord_id'
         ]
-        read_only_fields = ('discord_id',)
+        read_only_fields = ('id',)
