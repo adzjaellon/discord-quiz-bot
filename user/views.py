@@ -6,13 +6,14 @@ from .serializers import UserProfileSerializer
 from rest_framework.response import Response
 from quiz.models import Question
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     filter_backends = (filters.OrderingFilter,)
-    ordering = ('-score',)
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         count = self.request.query_params.get('param', None)
@@ -72,7 +73,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             user.save()
             serializer = UserProfileSerializer(user, many=False)
         else:
-            UserProfile.objects.create(name=name, discord_id=id, score=0, total_attempts=1)
+            UserProfile.objects.create(name=name, discord_id=id, total_attempts=1)
             user = UserProfile.objects.get(discord_id=id)
             serializer = UserProfileSerializer(user, many=False)
 

@@ -1,11 +1,14 @@
 import requests
 import json
 import random
+from decouple import config
 
 
 def get_question(discord_id):
-    response = requests.get(f'http://127.0.0.1:8000/api/question/?discord_id={discord_id}')
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.get(f'http://127.0.0.1:8000/api/question/?discord_id={discord_id}', headers=headers)
     json_data = json.loads(response.text)
+    print('get question json data', json_data)
     id = 1
     qs = ''
     answer = None
@@ -33,8 +36,10 @@ def get_question(discord_id):
 
 
 def my_questions(user_id):
+    headers = {'Authorization': f'Token {config("auth")}'}
     link = f'http://127.0.0.1:8000/api/question/?user_id={user_id}'
-    response = requests.get(link)
+
+    response = requests.get(link, headers=headers)
     json_data = json.loads(response.text)
 
     text = ''
@@ -48,14 +53,18 @@ def my_questions(user_id):
 
 
 def update_points(name, points, id, question_id):
+    headers = {'Authorization': f'Token {config("auth")}'}
     url = 'http://127.0.0.1:8000/api/users/'
+
     data = {
         'name': name,
         'score': points,
         'discord_id': id,
-        'question_id': question_id
+        'question_id': question_id,
     }
-    request = requests.post(url, data)
+    request = requests.post(url, data, headers=headers)
+    '''json_data = json.loads(request.text)
+    print('update points json data', json_data)'''
     return
 
 
@@ -64,22 +73,27 @@ def get_ranking(message, author_id):
     leaderboard = ''
 
     if len(msg) > 1:
-        if int(msg[1]) < 1:
-            return 'Number must be greater than zero'
-        link = f'http://127.0.0.1:8000/api/users/?id={author_id}&param={msg[1]}'
+        if msg[1].isdigit():
+            if int(msg[1]) < 1:
+                return 'Number must be greater than zero'
+            link = f'http://127.0.0.1:8000/api/users/?id={author_id}&param={msg[1]}'
+        else:
+            return 'Wrong format! $rank - Displaying my current ranking | $rank (number) - Displaying top players from 1 to number '
     else:
         link = f'http://127.0.0.1:8000/api/users/?id={author_id}'
 
-    response = requests.get(link)
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.get(link, headers=headers)
     json_data = json.loads(response.text)
-
     position = 1
-    if len(json_data) > 1:
+
+    if len(json_data) >= 1:
         for user in json_data:
             leaderboard += str(position) + '. ' + user['name'] + ' points: ' + str(user['score']) + '\n'
             position += 1
     else:
-        leaderboard += str(position) + '. ' + json_data[0]['name'] + ' points: ' + str(json_data[0]['score']) + '\n'
+        return 'There is no users in ranking!'
+
     return leaderboard
 
 
@@ -104,7 +118,9 @@ def create_question(message, author_id, name):
         'answers': msg[2:-1],
         'correct': msg[-1]
     }
-    response = requests.post(link, data=data)
+
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.post(link, data=data, headers=headers)
     json_data = json.loads(response.text)
 
     return json_data
@@ -112,7 +128,8 @@ def create_question(message, author_id, name):
 
 def delete_question(user_id, question_id):
     link = f'http://127.0.0.1:8000/api/question/{question_id}/?user_id={user_id}'
-    response = requests.delete(link)
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.delete(link, headers=headers)
     json_data = json.loads(response.text)
 
     return json_data
@@ -125,7 +142,8 @@ def rate_question(question_id, rating, user_id, username):
         'user_id': user_id,
         'username': username
     }
-    response = requests.put(url, data=data)
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.put(url, data=data, headers=headers)
     json_data = json.loads(response.text)
 
     return json_data
@@ -133,8 +151,10 @@ def rate_question(question_id, rating, user_id, username):
 
 def my_reviews(user_id):
     url = f'http://127.0.0.1:8000/api/review/?id={user_id}'
-    response = requests.get(url)
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.get(url, headers=headers)
     json_data = json.loads(response.text)
+    print('my reviews json data', json_data)
     text = ''
 
     if json_data:
@@ -147,7 +167,8 @@ def my_reviews(user_id):
 
 def delete_review(user_id, question_id):
     link = f'http://127.0.0.1:8000/api/review/{question_id}/?user_id={user_id}'
-    response = requests.delete(link)
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.delete(link, headers=headers)
     json_data = json.loads(response.text)
 
     return json_data
@@ -155,7 +176,8 @@ def delete_review(user_id, question_id):
 
 def profile(user_id):
     url = f'http://127.0.0.1:8000/api/users/profile_details/?id={user_id}'
-    response = requests.get(url)
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.get(url, headers=headers)
     json_data = json.loads(response.text)
 
     if isinstance(json_data, dict):
@@ -167,15 +189,15 @@ def profile(user_id):
 
 def increase_attempts(user_id, username):
     url = f'http://127.0.0.1:8000/api/users/increase_attempts/?id={user_id}&name={username}'
-    response = requests.put(url, data={})
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.put(url, data={}, headers=headers)
     json_data = json.loads(response.text)
-    print('increase attempts json data', json_data)
     return
 
 
 def increase_successful_attempts(user_id):
     url = f'http://127.0.0.1:8000/api/users/increase_successful_attempts/?id={user_id}'
-    response = requests.put(url, data={})
+    headers = {'Authorization': f'Token {config("auth")}'}
+    response = requests.put(url, data={}, headers=headers)
     json_data = json.loads(response.text)
-    print('increase successful attempts json data', json_data)
     return

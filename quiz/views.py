@@ -4,13 +4,14 @@ from rest_framework import filters
 from .serializers import QuestionSerializer, ReviewSerializer
 from rest_framework.response import Response
 from user.models import UserProfile
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
-    ordering = ('author',)
+    permission_classes = [AllowAny]
     search_fields = ('title',)
 
     def get_queryset(self):
@@ -25,13 +26,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        if UserProfile.objects.filter(discord_id=request.data['author_id']).exists():
-            profile = UserProfile.objects.get(discord_id=request.data['author_id'])
-        else:
-            profile = UserProfile.objects.create(discord_id=request.data['author_id'], name=request.data['name'], score=0)
-
-        Question.objects.create(title=request.data['title'], author=profile, points=int(request.data['points']))
-        question = Question.objects.filter(author=profile, title=request.data['title'])[0]
+        profile, created = UserProfile.objects.get_or_create(name=request.data['name'],
+                                                             discord_id=request.data['author_id'])
+        question = Question.objects.create(title=request.data['title'], author=profile,
+                                           points=int(request.data['points']))
         answers = request.POST.getlist('answers')
         correct = request.data['correct']
 
@@ -53,7 +51,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             if UserProfile.objects.filter(discord_id=user_id).exists():
                 user = UserProfile.objects.get(discord_id=user_id)
             else:
-                UserProfile.objects.create(name=username, discord_id=user_id, score=0)
+                UserProfile.objects.create(name=username, discord_id=user_id)
                 user = UserProfile.objects.get(discord_id=user_id)
 
             print(question.review.filter(user=user).exists())
@@ -85,7 +83,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     filter_backends = (filters.OrderingFilter, )
-    ordering = ('-stars', )
 
     def get_queryset(self):
         id = self.request.query_params.get('id', None)
