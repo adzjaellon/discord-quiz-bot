@@ -75,7 +75,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 question.delete()
                 return Response(f'Question with id-{question_id} deleted')
             else:
-                return Response('You have no permission')
+                return Response('You have no permission to delete this question')
         else:
             return Response(f'Question with id: {question_id} does not exist!')
 
@@ -103,7 +103,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
                 review.delete()
                 return Response(f'Review with id: {review_id} deleted')
             else:
-                return Response('You have no permission to do that')
+                return Response('You have no permission to delete this review')
         else:
             return Response(f'Your review with id {review_id} does not exist!')
 

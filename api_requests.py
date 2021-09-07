@@ -30,6 +30,9 @@ def get_question(discord_id):
 
         points = json_data[random_int]['points']
         question_id = json_data[random_int]['id']
+        average = json_data[random_int]['get_average_review']['average']
+        author = json_data[random_int]['author']['name']
+
         return (qs, answer, points, question_id, average, author)
     else:
         return (qs, answer, points, question_id, average, author)
@@ -136,6 +139,9 @@ def delete_question(user_id, question_id):
 
 
 def rate_question(question_id, rating, user_id, username):
+    if not str(user_id).isdigit() or not str(rating).isdigit():
+        return '$rate (question_id) (rating from 1 to 5) - Rate question with given id'
+
     url = f'http://127.0.0.1:8000/api/question/{question_id}/'
     data = {
         'rating': rating,

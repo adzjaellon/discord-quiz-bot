@@ -45,7 +45,7 @@ async def on_message(message):
 
             if int(guess.content) == answer:
                 user = guess.author
-                msg = '`' + str(guess.author.name) + ' you got it +' + str(points) + 'points`'
+                msg = '`' + str(guess.author.name) + ' you got it +' + str(points) + ' points`'
                 await message.channel.send(msg)
                 update_points(user, points, user.id, question_id)
                 increase_successful_attempts(message.author.id)
@@ -81,9 +81,12 @@ async def on_message(message):
         if len(msg) > 2 or len(msg) == 1:
             await message.channel.send("( $delete question_id ) is correct format for deleting questions")
         else:
-            content = delete_question(message.author.id, int(msg[1]))
-            text = f'`{content}`'
-            await message.channel.send(text)
+            if not str(msg[1]).isdigit():
+                await message.channel.send('$rate (question_id) (rating from 1 to 5) - Rate question with given id')
+            else:
+                content = delete_question(message.author.id, int(msg[1]))
+                text = f'`{content}`'
+                await message.channel.send(text)
 
     if message.content.startswith('$myreviews'):
         content = my_reviews(message.author.id)
@@ -98,7 +101,7 @@ async def on_message(message):
             text = f'`{content}`'
             await message.channel.send(text)
         else:
-            await message.channel.send("**( $rate (question id) (0-5 rating) ) is correct format for deleting questions**")
+            await message.channel.send("**$rate (question_id) (rating from 1 to 5) - Rate question with given id**")
 
     if message.content.startswith('$reviewdelete'):
         msg = message.content.split(' ')
