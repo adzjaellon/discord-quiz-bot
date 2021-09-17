@@ -5,6 +5,7 @@ from .serializers import QuestionSerializer, ReviewSerializer
 from rest_framework.response import Response
 from user.models import UserProfile
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import action
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
@@ -78,6 +79,17 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 return Response('You have no permission to delete this question')
         else:
             return Response(f'Question with id: {question_id} does not exist!')
+
+    @action(detail=False, methods=['get'])
+    def get_question(self, request, **kwargs):
+        id = request.query_params.get('id', None)
+
+        if Question.objects.filter(id=id).exists():
+            question = Question.objects.get(id=id)
+            serializer = QuestionSerializer(question, many=False)
+            return Response(serializer.data)
+        else:
+            return Response(f'You have no question with id: {id}')
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

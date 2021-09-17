@@ -33,7 +33,7 @@ class Answer(models.Model):
 class Review(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='review')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='review')
-    stars = models.SmallIntegerField()
+    stars = models.FloatField()
 
     def __str__(self):
         return f'{self.user} {self.question} {self.stars}'

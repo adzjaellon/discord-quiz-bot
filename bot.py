@@ -1,10 +1,8 @@
 import discord
-from decouple import config
-from api_requests import (get_question, my_questions, update_points,
-                          get_ranking, delete_question, create_question,
-                          my_reviews, rate_question, delete_review,
-                          profile, increase_attempts, increase_successful_attempts)
 import asyncio
+from decouple import config
+from api_requests import *
+
 
 client = discord.Client()
 token = config('token')
@@ -12,33 +10,35 @@ token = config('token')
 
 @client.event
 async def on_message(message):
-
     if message.author == client.user:
         return
 
     if message.content.startswith('$commands'):
-        content = '**$rank** - Displaying my current ranking | $rank (number) - Displaying top players from 1 to number \n\n' \
-                  '($create [title].[points].[answers (multiple)].[correct answer]) - Creating question that will be added to the database, EXAMPLE $create how old are you?.2.14.16.21.3 (where 2 is how much points did you get for correct guess and 3 is number of correct answer)\n\n' \
-                  '**$myquestions** - Displaying list of all my questions\n\n' \
-                  '**$delete** (question_id) - Deleting question with given id\n\n' \
-                  '**$rate** (question_id) (rating from 1 to 5) - Rate question with given id\n\n' \
-                  '**$myreviews** - Displaying list of my reviews\n\n' \
-                  '**$reviewdelete** (review_id) - Deleting review with given id\n\n' \
-                  '**$profile** - Displaying current user stats\n\n'
+        content = '**$random** - Picks a random question from the database\n\n' \
+                  '**$question (question_id)** - Show question details\n\n' \
+                  '**$rank** - Display my current ranking | **$rank (number)** - Display top players from 1 to number\n\n' \
+                  '**($create [title].[points for correct answer (from 1 to 5)].[answers (minimum 3 - maximum 5)].[correct answer (1 - number of answers)])** - ' \
+                  'Create question that will be added to the database,\nEXAMPLE: $create What is the earth diameter?.2.6000km.5200km.6400km.6900km.3 (2 points for correct answer and third question is correct)\n\n' \
+                  '**$myquestions** - Display list of all questions I added\n\n' \
+                  '**$delete (question_id)** - Delete question with given id (if you are the author)\n\n' \
+                  '**$rate (question_id) (rating from 1 to 5)** - Rate question with given id\n\n' \
+                  '**$myreviews** - Display list of my reviews\n\n' \
+                  '**$reviewdelete (review_id)** - Delete review with given id (if you are the author)\n\n' \
+                  '**$profile** - Display my profile stats\n\n'
         await message.channel.send(content)
 
     if message.content.startswith('$random'):
         a, answer, points, question_id, average, author = get_question(message.author.id)
 
         if answer is not None:
-            msg = f'**Question id: {question_id}, created by: {author}\n--- Average stars: {average} \n\n {a}**'
+            msg = f'**Question id: {question_id}, created by: {author}\n--- Average stars for this question: {("No reviews for this question yet" if average == None else average)} \n\n {a}**'
             await message.channel.send(msg)
 
             def check(m):
                 return m.author == message.author and m.content.isdigit()
 
             try:
-                guess = await client.wait_for('message', check=check, timeout=5.0)
+                guess = await client.wait_for('message', check=check, timeout=10.0)
             except asyncio.TimeoutError:
                 increase_attempts(message.author.id, message.author)
                 return await message.channel.send('**Time is up, you failed**')
@@ -50,19 +50,28 @@ async def on_message(message):
                 update_points(user, points, user.id, question_id)
                 increase_successful_attempts(message.author.id)
             else:
-
                 await message.channel.send('**Wrong answer!**')
             increase_attempts(message.author.id, message.author)
         else:
-            await message.channel.send('**Theres no more questions to be solved**')
+            await message.channel.send('**Theres no questions to be solved**')
+
+    if message.content.startswith('$question'):
+        msg = message.content.split(' ')
+
+        if len(msg) > 2 or len(msg) == 1:
+            await message.channel.send("( $question question_id ) is correct format for displaying question details")
+        else:
+            content = question_details(msg[1])
+            await message.channel.send(content)
 
     if message.content.startswith('$myquestions'):
         content = my_questions(message.author.id)
         text = f'```{content}```'
+
         if content is not None:
             await message.channel.send(text)
         else:
-            await message.channel.send('You dont have any questions')
+            await message.channel.send('```You dont have any questions```')
 
     if message.content.startswith('$rank'):
         leaderboard = get_ranking(message.content, message.author.id)
@@ -70,7 +79,7 @@ async def on_message(message):
         await message.channel.send(text)
 
     if message.content.startswith('$create'):
-        name = message.author.name + message.author.discriminator
+        name = message.author
         msg = create_question(message, message.author.id, name)
         text = f'```{msg}```'
         await message.channel.send(text)
@@ -107,7 +116,7 @@ async def on_message(message):
         msg = message.content.split(' ')
 
         if len(msg) > 2 or len(msg) == 1:
-            await message.channel.send("( $deletereview review_id ) is correct format for deleting questions")
+            await message.channel.send("( $deletereview review_id ) is correct format for deleting reviews")
         else:
             content = delete_review(message.author.id, int(msg[1]))
             await message.channel.send(content)

@@ -8,7 +8,6 @@ def get_question(discord_id):
     headers = {'Authorization': f'Token {config("auth")}'}
     response = requests.get(f'http://127.0.0.1:8000/api/question/?discord_id={discord_id}', headers=headers)
     json_data = json.loads(response.text)
-    print('get question json data', json_data)
     id = 1
     qs = ''
     answer = None
@@ -38,10 +37,24 @@ def get_question(discord_id):
         return (qs, answer, points, question_id, average, author)
 
 
+def question_details(question_id):
+    headers = {'Authorization': f'Token {config("auth")}'}
+    link = f'http://127.0.0.1:8000/api/question/get_question/?id={question_id}'
+    response = requests.get(link, headers=headers)
+    json_data = json.loads(response.text)
+    text = f'Question id: {json_data["id"]}\n' \
+           f'Title: {json_data["title"]}\n' \
+           f'Points: {json_data["points"]}\n' \
+           f'Author: {json_data["author"]["name"]}\n' \
+           f'Created on: {json_data["created"]}\n' \
+           f'Average review: {("No reviews for this question" if json_data["get_average_review"]["average"] == None else json_data["get_average_review"]["average"])}'
+
+    return text
+
+
 def my_questions(user_id):
     headers = {'Authorization': f'Token {config("auth")}'}
     link = f'http://127.0.0.1:8000/api/question/?user_id={user_id}'
-
     response = requests.get(link, headers=headers)
     json_data = json.loads(response.text)
 
@@ -103,8 +116,9 @@ def get_ranking(message, author_id):
 def create_question(message, author_id, name):
     content = message.content.replace('$create', '')
     msg = content.split('.')
-    link = 'http://127.0.0.1:8000/api/question/'
 
+    if int(msg[1]) not in list(range(1, 6)):
+        return 'Points number must be in range from 1 to 5'
     if len(msg) < 6 or len(msg) > 9:
         return 'WRONG! You need at least 3 answers to your question (max 5 answers)!\nCorrect question template: [ EXAMPLE: $create how old are you?.2.14.16.21.3 (question: how old are you? - points: 2 - answers: 14, 16, 21 - correct answer: 3)\n($create [title].[points].[answers (multiple)].[correct answer]) ]'
     if not msg[1].isdigit():
@@ -117,12 +131,14 @@ def create_question(message, author_id, name):
     data = {
         'name': name,
         'author_id': author_id,
-        'title': msg[0], 'points': msg[1],
+        'title': msg[0],
+        'points': msg[1],
         'answers': msg[2:-1],
         'correct': msg[-1]
     }
 
     headers = {'Authorization': f'Token {config("auth")}'}
+    link = 'http://127.0.0.1:8000/api/question/'
     response = requests.post(link, data=data, headers=headers)
     json_data = json.loads(response.text)
 
@@ -139,7 +155,7 @@ def delete_question(user_id, question_id):
 
 
 def rate_question(question_id, rating, user_id, username):
-    if not str(user_id).isdigit() or not str(rating).isdigit():
+    if not str(question_id).isdigit() or not str(rating).isdigit():
         return '$rate (question_id) (rating from 1 to 5) - Rate question with given id'
 
     url = f'http://127.0.0.1:8000/api/question/{question_id}/'
@@ -151,6 +167,9 @@ def rate_question(question_id, rating, user_id, username):
     headers = {'Authorization': f'Token {config("auth")}'}
     response = requests.put(url, data=data, headers=headers)
     json_data = json.loads(response.text)
+
+    if json_data['detail'] == 'Not found.':
+        return 'Make sure you are using correct question id'
 
     return json_data
 
@@ -187,7 +206,7 @@ def profile(user_id):
     json_data = json.loads(response.text)
 
     if isinstance(json_data, dict):
-        text = f"Name: {json_data['name']}\nScore: {json_data['score']}\nCreated questions: {json_data['questions_number']}\nCreated reviews: {json_data['reviews_number']}\nEfficiency: {json_data['correct_rate']}%"
+        text = f"Name: {json_data['name']}\nScore: {json_data['score']}\nCreated questions: {json_data['questions_number']}\nCreated reviews: {json_data['reviews_number']}\nTotal attempts: {json_data['total_attempts']}\nSuccessful attempts: {json_data['successful_attempts']}\nEfficiency: {json_data['correct_rate']}%"
     else:
         text = json_data
     return text

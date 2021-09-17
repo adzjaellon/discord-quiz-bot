@@ -6,14 +6,14 @@ from .serializers import UserProfileSerializer
 from rest_framework.response import Response
 from quiz.models import Question
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     filter_backends = (filters.OrderingFilter,)
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         count = self.request.query_params.get('param', None)
@@ -54,7 +54,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def profile_details(self, request, **kwargs):
-        id = self.request.query_params.get('id', None)
+        id = request.query_params.get('id', None)
         if UserProfile.objects.filter(discord_id=id).exists():
             user = UserProfile.objects.get(discord_id=id)
             serializer = UserProfileSerializer(user, many=False)
@@ -64,8 +64,8 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get', 'put'])
     def increase_attempts(self, request, **kwargs):
-        id = self.request.query_params.get('id', None)
-        name = self.request.query_params.get('name', None)
+        id = request.query_params.get('id', None)
+        name = request.query_params.get('name', None)
 
         if UserProfile.objects.filter(discord_id=id).exists():
             user = UserProfile.objects.get(discord_id=id)
@@ -81,7 +81,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get', 'put'])
     def increase_successful_attempts(self, request, **kwargs):
-        id = self.request.query_params.get('id', None)
+        id = request.query_params.get('id', None)
         user = UserProfile.objects.get(discord_id=id)
         user.successful_attempts += 1
         user.save()
