@@ -154,7 +154,7 @@ def delete_question(user_id, question_id) -> dict:
     return json_data
 
 
-def rate_question(question_id, rating, user_id, username) -> dict:
+def rate_question(question_id, rating, user_id, username) -> dict or str:
     if not str(question_id).isdigit() or not str(rating).isdigit():
         return '$rate (question_id) (rating from 1 to 5) - Rate question with given id'
 
