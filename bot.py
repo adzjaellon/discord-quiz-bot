@@ -51,6 +51,7 @@ async def on_message(message):
                 increase_successful_attempts(message.author.id)
             else:
                 await message.channel.send('**Wrong answer!**')
+
             increase_attempts(message.author.id, message.author)
         else:
             await message.channel.send('**Theres no questions to be solved**')

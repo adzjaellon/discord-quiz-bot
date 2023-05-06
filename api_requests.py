@@ -37,7 +37,7 @@ def get_question(discord_id):
         return (qs, answer, points, question_id, average, author)
 
 
-def question_details(question_id):
+def question_details(question_id) -> str:
     headers = {'Authorization': f'Token {config("auth")}'}
     link = f'http://127.0.0.1:8000/api/question/get_question/?id={question_id}'
     response = requests.get(link, headers=headers)
@@ -52,7 +52,7 @@ def question_details(question_id):
     return text
 
 
-def my_questions(user_id):
+def my_questions(user_id) -> str:
     headers = {'Authorization': f'Token {config("auth")}'}
     link = f'http://127.0.0.1:8000/api/question/?user_id={user_id}'
     response = requests.get(link, headers=headers)
@@ -68,7 +68,7 @@ def my_questions(user_id):
     return text
 
 
-def update_points(name, points, id, question_id):
+def update_points(name, points, id, question_id) -> None:
     headers = {'Authorization': f'Token {config("auth")}'}
     url = 'http://127.0.0.1:8000/api/users/'
 
@@ -84,7 +84,7 @@ def update_points(name, points, id, question_id):
     return
 
 
-def get_ranking(message, author_id):
+def get_ranking(message, author_id) -> str:
     msg = message.split(' ')
     leaderboard = ''
 
@@ -113,7 +113,7 @@ def get_ranking(message, author_id):
     return leaderboard
 
 
-def create_question(message, author_id, name):
+def create_question(message, author_id, name) -> str or dict:
     content = message.content.replace('$create', '')
     msg = content.split('.')
 
@@ -145,7 +145,7 @@ def create_question(message, author_id, name):
     return json_data
 
 
-def delete_question(user_id, question_id):
+def delete_question(user_id, question_id) -> dict:
     link = f'http://127.0.0.1:8000/api/question/{question_id}/?user_id={user_id}'
     headers = {'Authorization': f'Token {config("auth")}'}
     response = requests.delete(link, headers=headers)
@@ -154,7 +154,7 @@ def delete_question(user_id, question_id):
     return json_data
 
 
-def rate_question(question_id, rating, user_id, username):
+def rate_question(question_id, rating, user_id, username) -> dict:
     if not str(question_id).isdigit() or not str(rating).isdigit():
         return '$rate (question_id) (rating from 1 to 5) - Rate question with given id'
 
@@ -174,7 +174,7 @@ def rate_question(question_id, rating, user_id, username):
     return json_data
 
 
-def my_reviews(user_id):
+def my_reviews(user_id) -> str:
     url = f'http://127.0.0.1:8000/api/review/?id={user_id}'
     headers = {'Authorization': f'Token {config("auth")}'}
     response = requests.get(url, headers=headers)
@@ -190,7 +190,7 @@ def my_reviews(user_id):
     return text
 
 
-def delete_review(user_id, question_id):
+def delete_review(user_id, question_id) -> dict:
     link = f'http://127.0.0.1:8000/api/review/{question_id}/?user_id={user_id}'
     headers = {'Authorization': f'Token {config("auth")}'}
     response = requests.delete(link, headers=headers)
@@ -199,7 +199,7 @@ def delete_review(user_id, question_id):
     return json_data
 
 
-def profile(user_id):
+def profile(user_id) -> str:
     url = f'http://127.0.0.1:8000/api/users/profile_details/?id={user_id}'
     headers = {'Authorization': f'Token {config("auth")}'}
     response = requests.get(url, headers=headers)
@@ -212,7 +212,7 @@ def profile(user_id):
     return text
 
 
-def increase_attempts(user_id, username):
+def increase_attempts(user_id, username) -> None:
     url = f'http://127.0.0.1:8000/api/users/increase_attempts/?id={user_id}&name={username}'
     headers = {'Authorization': f'Token {config("auth")}'}
     response = requests.put(url, data={}, headers=headers)
@@ -220,7 +220,7 @@ def increase_attempts(user_id, username):
     return
 
 
-def increase_successful_attempts(user_id):
+def increase_successful_attempts(user_id) -> None:
     url = f'http://127.0.0.1:8000/api/users/increase_successful_attempts/?id={user_id}'
     headers = {'Authorization': f'Token {config("auth")}'}
     response = requests.put(url, data={}, headers=headers)
